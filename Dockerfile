@@ -37,6 +37,7 @@ RUN mkdir -p $MOODLE_DATA /var/log/supervisor $MOODLE_DIR \
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY plugins.json* /usr/local/bin/default_plugins.json
+RUN sed -i -e 's/\r$//' /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 80

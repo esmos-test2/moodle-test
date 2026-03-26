@@ -541,6 +541,21 @@ if [ ! -z "$PLUGINS_CONTENT" ]; then
             # Copia e remove .git
             cp -a "$PLUGIN_CACHE_PATH/." "$PLUGIN_DEST_PATH/"
             rm -rf "$PLUGIN_DEST_PATH/.git"
+
+            # 🛠 BUGFIX: HACK FOR WEBHOOKS PLUGIN PATH MISMATCH
+            if [ "$REL_PATH" = "local/webhooks" ]; then
+                echo "--- Patching Webhooks XMLDB Path ---"
+                echo "--- BEFORE SED ---"
+                head -n 2 "$PLUGIN_DEST_PATH/db/install.xml" 2>/dev/null || echo "file not found"
+                
+                sed -i 's/PATH="[^"]*"/PATH="local\/webhooks\/db"/g' "$PLUGIN_DEST_PATH/db/install.xml"
+                
+                echo "--- AFTER SED ---"
+                head -n 2 "$PLUGIN_DEST_PATH/db/install.xml" 2>/dev/null || echo "file not found"
+
+                echo "--- Patching Webhooks Postgres SQL ---"
+                sed -i 's/"{local_webhooks_service}", "1"/"{local_webhooks_service}", "1=1"/g' "$PLUGIN_DEST_PATH/classes/webhooks_table.php" 2>/dev/null || true
+            fi
         done
     fi
 fi
@@ -553,6 +568,7 @@ chmod -R 750 "$MOODLE_DIR"
 chmod -R 700 "$MOODLE_DATA"
 chown -R root:www-data "$MOODLE_DIR"
 chown -R www-data:www-data "$MOODLE_DATA"
+mkdir -p "$CODE_CACHE_DIR" "$PLUGIN_CACHE_ROOT"
 chown -R root:root "$CODE_CACHE_DIR" "$PLUGIN_CACHE_ROOT"
 echo ">>> Fixing Nginx temp paths (Crucial for Uploads)..."
 # Cria os diretórios caso não existam

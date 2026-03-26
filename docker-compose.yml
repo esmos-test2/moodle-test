@@ -1,18 +1,17 @@
 services:
   db:
-    image: postgres:18.1
+    image: postgres:18-alpine
     environment:
       POSTGRES_USER: moodle
       POSTGRES_PASSWORD: password
       POSTGRES_DB: moodle
     volumes:
       - db_data:/var/lib/postgresql/18/docker
+    command: ["postgres", "-c", "shared_buffers=4GB", "-c", "effective_cache_size=12GB", "-c", "work_mem=32MB", "-c", "maintenance_work_mem=512MB", "-c", "checkpoint_completion_target=0.9", "-c", "wal_buffers=16MB", "-c", "default_statistics_target=100", "-c", "random_page_cost=1.1", "-c", "effective_io_concurrency=200", "-c", "min_wal_size=1GB", "-c", "max_wal_size=4GB"]
 
-  memcached:
-    image: memcached:1.6-alpine
-    command: memcached
-    ports:
-      - "11211:11211"
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 1gb --maxmemory-policy allkeys-lru
 
   adminer:
     image: adminer:latest
@@ -37,7 +36,7 @@ services:
       - "80:80"
     depends_on:
       - db
-      - memcached
+      - redis
     environment:
       MOODLE_URL: http://localhost
       DB_HOST: db
@@ -53,34 +52,66 @@ services:
       PLUGIN_CODE_STATUS: update
       SITE_CODE_STATUS: update
       SERVER_MEMORY_USAGE_PERCENT: 20
-#      MOODLE_PLUGINS_JSON: |
-#        [
-#          {
-#            "giturl": "https://github.com/h5p/moodle-mod_hvp.git",
-#            "branch": "stable",
-#            "installpath": "mod/hvp"
-#          },
-#          {
-#            "giturl": "https://github.com/davosmith/moodle-checklist.git",
-#            "branch": "master",
-#            "installpath": "mod/checklist"
-#          }
-#        ]
-      # 🔥 MEMCACHED + SESSION HANDLER
+      MOODLE_PLUGINS_JSON: |
+        [
+          {
+            "giturl": "https://github.com/valentineus/moodle-webhooks.git",
+            "branch": "master",
+            "installpath": "local/webhooks"
+          }
+        ]
+      # 🔥 REDIS + SESSION & CACHE HANDLER
       MOODLE_EXTRA_PHP: |
         $$CFG->debug = 32767;
         $$CFG->debugdisplay = 1;
-        $$CFG->session_handler_class = '\core\session\memcached';
-        $$CFG->session_memcached_save_path = 'memcached:11211';
-        $$CFG->session_memcached_prefix = 'moodle_';
-        $$CFG->session_memcached_acquire_lock_timeout = 120;
-        $$CFG->session_memcached_lock_expire = 7200;
-        $$CFG->cachestore_memcached_servers = 'memcached:11211';
+        $$CFG->session_handler_class = '\core\session\redis';
+        $$CFG->session_redis_host = 'redis';
+        $$CFG->session_redis_port = 6379;
+        $$CFG->session_redis_prefix = 'moodle_';
+        $$CFG->session_redis_acquire_lock_timeout = 120;
+        $$CFG->session_redis_lock_expire = 7200;
+        $$CFG->cachestore_redis_servers = 'redis:6379';
     volumes:
       - moodle_data:/var/www/moodledata
     dns:
       - 8.8.8.8
       - 1.1.1.1
+
+  meta:
+    container_name: supabase-meta-moodle
+    image: supabase/postgres-meta:v0.95.2
+    restart: unless-stopped
+    environment:
+      PG_META_PORT: 8080
+      PG_META_DB_HOST: db
+      PG_META_DB_PORT: 5432
+      PG_META_DB_NAME: moodle
+      PG_META_DB_USER: moodle
+      PG_META_DB_PASSWORD: password
+      CRYPTO_KEY: "68725cf26d9c9b91c9f289df68b2cba1"
+
+  studio:
+    container_name: supabase-studio-moodle
+    image: supabase/studio:2026.03.16-sha-5528817
+    restart: unless-stopped
+    ports:
+      - "8000:3000"
+    depends_on:
+      - meta
+    environment:
+      HOSTNAME: "::"
+      STUDIO_PG_META_URL: http://meta:8080
+      POSTGRES_PORT: 5432
+      POSTGRES_HOST: db
+      POSTGRES_DB: moodle
+      POSTGRES_USER: moodle
+      POSTGRES_PASSWORD: password
+      PG_META_CRYPTO_KEY: "68725cf26d9c9b91c9f289df68b2cba1"
+      PGRST_DB_SCHEMAS: public,storage,graphql_public
+      DEFAULT_ORGANIZATION_NAME: "Moodle"
+      DEFAULT_PROJECT_NAME: "Moodle DB"
+      NEXT_PUBLIC_ENABLE_LOGS: "false"
+      NEXT_ANALYTICS_BACKEND_PROVIDER: postgres
 
 volumes:
   db_data:

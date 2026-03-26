@@ -1,3 +1,27 @@
+# 🏥 ESMOS Healthcare deployment: Moodle
+
+> [!IMPORTANT]
+> **INTERNAL FORK DISCLAIMER**
+> *   **Upstream Source**: Forked from `esdrascaleb/moodle-docker-php-production`
+> *   **Fork Purpose**: Automated deployment containerizing Moodle for **Azure Container Apps (ACA)**.
+> *   **Internal Owner**: DevOps Team / `@charles`
+
+## 🚀 Internal Operations & Delivery (CI/CD)
+
+### 📂 Repository Structure
+*   `terraform/`: Provisions the Container App matching this environment.
+
+### 🛠️ Fork Adjustments
+*   **`Dockerfile` fixes**: Patched `entrypoint.sh` to remove Windows carriage returns (`\r$`) for Alpine support safety loops execution.
+*   **Cache Strategy Override**: Swapped **Memcached** for **Redis** (`redis:7-alpine`) inside `docker-compose.yml` mapped environments configurations.
+*   **Plugin Additions**: Added `.github/workflows` to subscribe explicitly over `moodle-webhooks` repository.
+*   **Bugfix Patches inside `entrypoint.sh`**: Injected script logic automated patching Webhooks database XML paths misalignments.
+*   **Execution acceleration**: Reduced Cron polling loop setup speeds from 300s down directly to 60s natively.
+
+---
+
+## 📜 Original Upstream Documentation
+
 # Moodle Docker Image (Production Ready)
 
 Repository responsible for building the customized Moodle Docker image for production use (CapRover, Kubernetes, etc.)
