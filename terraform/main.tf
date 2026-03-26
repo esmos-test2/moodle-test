@@ -116,7 +116,7 @@ EOF
       name   = "moodle-redis"
       image  = "redis:7-alpine"
       cpu    = 0.25
-      memory = "0.25Gi"
+      memory = "0.5Gi"
     }
 
     volume {
