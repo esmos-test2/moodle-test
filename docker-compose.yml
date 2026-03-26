@@ -47,6 +47,8 @@ services:
       DB_PASS_CRON: password
       DB_PASS: password
       MOODLE_VERSION: MOODLE_405_STABLE
+      CODE_CACHE_DIR: /tmp/sitecode
+      PLUGIN_CACHE_ROOT: /tmp/plugincode
       PHP_MEMORY_LIMIT: 512M
       PHP_MAX_EXECUTION_TIME: 600
       PLUGIN_CODE_STATUS: update

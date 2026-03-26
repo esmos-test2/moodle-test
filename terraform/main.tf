@@ -94,6 +94,14 @@ resource "azurerm_container_app" "moodle" {
         value = "https://moodle-app.${var.aca_default_domain}"
       }
       env {
+        name  = "CODE_CACHE_DIR"
+        value = "/tmp/sitecode"
+      }
+      env {
+        name  = "PLUGIN_CACHE_ROOT"
+        value = "/tmp/plugincode"
+      }
+      env {
         name  = "MOODLE_EXTRA_PHP"
         value = <<EOF
 $$CFG->session_handler_class = '\\core\\session\\redis';
