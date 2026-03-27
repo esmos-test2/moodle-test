@@ -164,6 +164,7 @@ pm.max_requests = $PM_MAX_REQUESTS
 
 catch_workers_output = yes
 decorate_workers_output = no
+clear_env = no
 EOF
 
 #  OPCache
