@@ -106,13 +106,9 @@ resource "azurerm_container_app" "moodle" {
         value = <<EOF
 $$CFG->sslproxy = true;
 $$CFG->tracksessionip = false;
-$$CFG->session_handler_class = '\\core\\session\\redis';
-$$CFG->session_redis_host = '127.0.0.1';
-$$CFG->session_redis_port = 6379;
-$$CFG->session_redis_prefix = 'moodle_';
-$$CFG->session_redis_acquire_lock_timeout = 120;
-$$CFG->session_redis_lock_expire = 7200;
-$$CFG->cachestore_redis_servers = '127.0.0.1:6379';
+$$CFG->reverseproxy = false;
+$$CFG->session_handler_class = '\\core\\session\\database';
+$$CFG->session_database_acquire_lock_timeout = 120;
 EOF
       }
 
@@ -120,13 +116,6 @@ EOF
         name = "moodle-volume"
         path = "/var/www/moodledata" # Matches MOODLE_DATA in DockerfileAlpine
       }
-    }
-
-    container {
-      name   = "moodle-redis"
-      image  = "redis:7-alpine"
-      cpu    = 0.25
-      memory = "0.5Gi"
     }
 
     volume {
