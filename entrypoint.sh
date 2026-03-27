@@ -452,40 +452,39 @@ rm -rf "$MOODLE_DIR/.git"
 # 3. Generate Config.php (Always Fresh)
 # ----------------------------------------------------------------------
 echo ">>> Generating config.php..."
-cat <<'EOF' > "$MOODLE_DIR/config.php"
+cat <<EOF > "$MOODLE_DIR/config.php"
 <?php
-unset($CFG);
-global $CFG;
+unset(\$CFG);
+global \$CFG;
 
-$CFG = new stdClass();
-$CFG->dbtype    = getenv('DB_TYPE') ?: 'pgsql';
-$CFG->dblibrary = 'native';
-$CFG->dbhost    = getenv('DB_HOST') ?: 'localhost';
-$CFG->dbname    = getenv('DB_NAME') ?: 'moodle';
-$CFG->prefix    = getenv('DB_PREFIX') ?: 'mdl_';
-if (defined('CLI_SCRIPT') && CLI_SCRIPT && getenv('DB_USER_CRON')&&getenv('DB_PASS_CRON')) {
+\$CFG = new stdClass();
+\$CFG->dbtype    = '${DB_TYPE:-pgsql}';
+\$CFG->dblibrary = 'native';
+\$CFG->dbhost    = '${DB_HOST:-localhost}';
+\$CFG->dbname    = '${DB_NAME:-moodle}';
+\$CFG->prefix    = '${DB_PREFIX:-mdl_}';
+if (defined('CLI_SCRIPT') && CLI_SCRIPT && '${DB_USER_CRON:-}' && '${DB_PASS_CRON:-}') {
     // Configuração para o CRON (Processos de fundo)
-    $CFG->dbuser = getenv('DB_USER_CRON');
-    $CFG->dbpass = getenv('DB_PASS_CRON');
-    // O Cron não tem timeout, pode demorar o quanto quiser
+    \$CFG->dbuser = '${DB_USER_CRON}';
+    \$CFG->dbpass = '${DB_PASS_CRON}';
 } else {
-    $CFG->dbuser    = getenv('DB_USER') ?: 'moodle';
-    $CFG->dbpass    = getenv('DB_PASS') ?: '';
+    \$CFG->dbuser    = '${DB_USER:-moodle}';
+    \$CFG->dbpass    = '${DB_PASS:-}';
 }
 
-$CFG->dboptions = array (
-  'dbport' => getenv('DB_PORT') ?: '',
-  'dbpersist' => (bool) getenv('DB_PERSIST') ?: false,
+\$CFG->dboptions = array (
+  'dbport' => '${DB_PORT:-}',
+  'dbpersist' => false,
 );
 
-$CFG->wwwroot   = getenv('MOODLE_URL');
-$CFG->dataroot  = '/var/www/moodledata';
-$CFG->admin     = 'admin';
-$CFG->directorypermissions = 0700;
+\$CFG->wwwroot   = '${MOODLE_URL}';
+\$CFG->dataroot  = '/var/www/moodledata';
+\$CFG->admin     = 'admin';
+\$CFG->directorypermissions = 0700;
 
-$CFG->xsendfile = 'X-Accel-Redirect';
-$CFG->xsendfilealiases = array(
-    '/dataroot/' => $CFG->dataroot,
+\$CFG->xsendfile = 'X-Accel-Redirect';
+\$CFG->xsendfilealiases = array(
+    '/dataroot/' => \$CFG->dataroot,
 );
 
 EOF
