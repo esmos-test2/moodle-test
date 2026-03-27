@@ -553,8 +553,9 @@ if [ ! -z "$PLUGINS_CONTENT" ]; then
                 echo "--- AFTER SED ---"
                 head -n 2 "$PLUGIN_DEST_PATH/db/install.xml" 2>/dev/null || echo "file not found"
 
-                echo "--- Patching Webhooks Postgres SQL ---"
+                echo "--- Patching Webhooks Postgres SQL & PHP 8 array type safety ---"
                 sed -i 's/"{local_webhooks_service}", "1"/"{local_webhooks_service}", "1=1"/g' "$PLUGIN_DEST_PATH/classes/webhooks_table.php" 2>/dev/null || true
+                sed -i 's/return count($eventlist);/return $eventlist ? count($eventlist) : 0;/g' "$PLUGIN_DEST_PATH/classes/webhooks_table.php" 2>/dev/null || true
             fi
         done
     fi
