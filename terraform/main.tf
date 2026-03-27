@@ -105,13 +105,14 @@ resource "azurerm_container_app" "moodle" {
         name  = "MOODLE_EXTRA_PHP"
         value = <<EOF
 $$CFG->sslproxy = true;
+$$CFG->tracksessionip = false;
 $$CFG->session_handler_class = '\\core\\session\\redis';
-$$CFG->session_redis_host = 'localhost';
+$$CFG->session_redis_host = '127.0.0.1';
 $$CFG->session_redis_port = 6379;
 $$CFG->session_redis_prefix = 'moodle_';
 $$CFG->session_redis_acquire_lock_timeout = 120;
 $$CFG->session_redis_lock_expire = 7200;
-$$CFG->cachestore_redis_servers = 'localhost:6379';
+$$CFG->cachestore_redis_servers = '127.0.0.1:6379';
 EOF
       }
 
