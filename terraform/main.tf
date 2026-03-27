@@ -104,6 +104,8 @@ resource "azurerm_container_app" "moodle" {
       env {
         name  = "MOODLE_EXTRA_PHP"
         value = <<EOF
+$$CFG->sslproxy = true;
+$$CFG->reverseproxy = true;
 $$CFG->session_handler_class = '\\core\\session\\redis';
 $$CFG->session_redis_host = 'localhost';
 $$CFG->session_redis_port = 6379;
